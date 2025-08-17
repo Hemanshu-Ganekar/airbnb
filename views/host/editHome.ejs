@@ -65,7 +65,7 @@
           <input
             id="pricePerNight"
             class="border border-gray-300 w-full rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm"
-            type="text"
+            type="number"
             name="pricePerNight"
             placeholder="e.g., 5000 per Night"
             value="<%= edit == 'true' ? home.pricePerNight : '' %>"
@@ -91,7 +91,8 @@
           <input
             id="Rating"
             class="border border-gray-300 w-full rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm"
-            type="text"
+            type="number"
+            step="0.01"
             name="Rating"
             placeholder="e.g. 4.5 out of 5 "
             value="<%= edit == 'true' ? home.Rating : '' %>"
@@ -109,6 +110,18 @@
             placeholder="URL"
             value="<%= edit == 'true' ? home.Photo : '' %>"
           />
+                             <!-- Label -->
+          <label for="description" class="block text-left text-gray-700 text-lg font-medium">
+            Description
+          </label>
+          <!-- Input -->
+          <textarea
+            id="description"
+            class="border border-gray-300 w-full rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm"
+            type="text"
+            name="description"
+            placeholder="Description of your property"
+          ><%= edit == 'true' ? home.description : '' %></textarea>
           <!-- Submit Button -->
           <button
             type="submit"

@@ -3,60 +3,28 @@ const fs = require("fs");
 const rootDir = require("../utils/pathUtil");
 const Home = require("./home");
 const home = new Home;
+const db = require('../utils/database');
 
 module.exports = class bookings {
-    static getbookings(callback) {
-        const bookPath = path.join(rootDir, "data", "bookings.json");
-        fs.readFile(bookPath, (err, data) => {
-            let bookIds = [];
-             if (!err && data.length > 0) {
-            bookIds = JSON.parse(data);
 
-        } callback(bookIds);
-        })
+    static addbookings(id) {
+          return  db.execute('INSERT INTO bookings (id) VALUES (?)',[Number(id)]);
     }
-    static addbookings(id, callback) {
-        const bookPath = path.join(rootDir, "data", "bookings.json");
-
-        bookings.getbookings(bookIds => {
-            bookIds.push(id);
-            fs.writeFile(bookPath, JSON.stringify(bookIds), (err) => {
-                if (err) { console.log(err); }
-            });
-            callback();
-        })
+    static deletebookings(id) {
+            return db.execute('DELETE FROM bookings WHERE id=?',[Number(id)]);
     }
-    static deletebookings(id, callback) {
-        const bookPath = path.join(rootDir, "data", "bookings.json");
-
-        bookings.getbookings(bookIds => {
-            let newbook=[];
+    static async showbook() {
+   
+             let bookHomes = [];
+            let [books,fields]=await db.execute('SELECT*FROM bookings')
+             
+             for(let book of books){
+                 const [home]= await db.execute('SELECT*FROM homes WHERE id=?',[book.id]);
+    
+                 bookHomes.push(home[0]);
+             }
             
-            newbook = bookIds.filter(bookId => bookId.id !== id);
-            fs.writeFile(bookPath, JSON.stringify(newbook), (err) => {
-                if (err) { console.log(err); }
-            callback();
-            });
-            
-        })
-    }
-    static showbook(callback) {
-        const bookPath = path.join(rootDir, "data", "bookings.json");
-        const dataPath = path.join(rootDir, "data", "data.json");
-        let bookHomes = [];
-        Home.fetchAll(homes => {
-            bookings.getbookings(bookIds => {
-                homes.forEach(home => {
-                    bookIds.forEach(bookId => {
-                        if (bookId.id == home.id) {
-                            bookHomes.push(home);
-                        }
-                    })
-                });
-                callback(bookHomes);
-
-            })
-        })
+             return bookHomes;
 
     }
 

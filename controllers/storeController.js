@@ -3,15 +3,16 @@ const Fav = require("../model/favourite");
 const bookings = require("../model/bookings");
 
 const homeList = (req, res, next) => {
-    Home.fetchAll(registerHomes => {
+    Home.fetchAll().then(([registerHomes,fields])=>{
         res.render('store/homeList', { registerHomes: registerHomes, currentPage:"home" });
     })
+   
 }
 exports.homeList = homeList;
 
 
 const favourite = (req, res, next) => {
-    Fav.showFav((favHomes) => {
+    Fav.showFav().then((favHomes) => {
         res.render('store/favourite', { favHomes:favHomes, currentPage:"favourite" });
 
     })
@@ -22,12 +23,12 @@ const details = (req, res, next) => {
     const homeid = req.params.homeid;
     console.log(homeid);
 
-    Home.findById(homeid, (homeFound) => {
-        if (!homeFound) {
+    Home.findById(homeid).then(([homeFound,fields]) => {
+        if (!homeFound[0]) {
             console.log("Home not Found!!");
             res.redirect("/");
         } else {
-            res.render('store/details', { homeFound:homeFound,currentPage:"home" });
+            res.render('store/details', { homeFound:homeFound[0],currentPage:"home" });
         }
     })
 }
@@ -35,12 +36,12 @@ exports.details = details;
 
 const addFavourite = (req, res, next) => {
     console.log(req.body);
-    const id = req.body;
-    Fav.addfavourite(id, () => {
+    const id = req.body.id;
+    Fav.addfavourite(id)
+    .then(() => {
         res.redirect("/");
     });
 }
-
 exports.addFavourite = addFavourite;
 
 const deleteFavourite = (req, res, next) => {
@@ -50,17 +51,17 @@ const deleteFavourite = (req, res, next) => {
         return res.status(400).send("No ID provided");
     }
 
-    Fav.deleteFavourite(id, () => {
+    Fav.deleteFavourite(id).then(() => {
         res.redirect("/favourite");
     });
 };
-
 exports.deleteFavourite = deleteFavourite;
+
 // booking
 const addBookings = (req, res, next) => {
-    console.log(req.body);
-    const id = req.body;
-    bookings.addbookings(id, () => {
+    console.log(req.body.id);
+    const id = req.body.id; 
+    bookings.addbookings(id).then(() => {
         res.redirect("/");
     });
 }
@@ -73,7 +74,7 @@ const deleteBookings = (req, res, next) => {
         return res.status(400).send("No ID provided");
     }
 
-    bookings.deletebookings(id, () => {
+    bookings.deletebookings(id).then(() => {
         res.redirect("/bookings");
     });
 };
@@ -81,7 +82,8 @@ const deleteBookings = (req, res, next) => {
 exports.deleteBookings = deleteBookings;
 
 const showBookings = (req, res, next) => {
-    bookings.showbook((bookHomes) => {
+    bookings.showbook().then((bookHomes) => {
+        
         res.render('store/bookings', { bookHomes:bookHomes,currentPage:"bookings" });
 
     })

@@ -3,61 +3,23 @@ const fs = require("fs");
 const rootDir = require("../utils/pathUtil");
 const Home = require("./home");
 const home = new Home;
+const db = require('../utils/database');
 
 module.exports = class favourite {
-    static getfavourite(callback) {
-        const favPath = path.join(rootDir, "data", "favourite.json");
-        fs.readFile(favPath, (err, data) => {
-            let favIds = [];
-             if (!err && data.length > 0) {
-            favIds = JSON.parse(data);
 
-        } callback(favIds);
-        })
+    static addfavourite(id) {
+    return  db.execute('INSERT INTO favourite (id) VALUES (?)',[Number(id)]);
     }
-    static addfavourite(id, callback) {
-        const favPath = path.join(rootDir, "data", "favourite.json");
-
-        favourite.getfavourite(favIds => {
-            favIds.push(id);
-            fs.writeFile(favPath, JSON.stringify(favIds), (err) => {
-                if (err) { console.log(err); }
-            });
-            callback();
-        })
+    static deleteFavourite(id) {
+     return db.execute('DELETE FROM favourite WHERE id=?',[Number(id)]);
     }
-    static deleteFavourite(id, callback) {
-        const favPath = path.join(rootDir, "data", "favourite.json");
-
-        favourite.getfavourite(favIds => {
-            let newFav=[];
-            
-            newFav = favIds.filter(favId => favId.id !== id);
-            fs.writeFile(favPath, JSON.stringify(newFav), (err) => {
-                if (err) { console.log(err); }
-            callback();
-            });
-            
-        })
-    }
-    static showFav(callback) {
-        const favPath = path.join(rootDir, "data", "favourite.json");
-        const dataPath = path.join(rootDir, "data", "data.json");
+    static async showFav() {
         let favHomes = [];
-        Home.fetchAll(homes => {
-            favourite.getfavourite(favIds => {
-                homes.forEach(home => {
-                    favIds.forEach(favId => {
-                        if (favId.id == home.id) {
-                            favHomes.push(home);
-                        }
-                    })
-                });
-                callback(favHomes);
-
-            })
-        })
-
+       let [favs,fields]=await db.execute('SELECT*FROM favourite')
+        for(let fav of favs){
+            const [home]= await db.execute('SELECT * FROM homes where id=?',[fav.id]);
+            favHomes.push(home[0]);
+        }
+        return favHomes;
     }
-
 }

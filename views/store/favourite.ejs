@@ -8,7 +8,6 @@
  <%-include('../partials/nav')%>
 
 
-
   <main class="mt-10 w-full flex flex-col items-center">
     <div class="w-full max-w-5xl">
       <h1 class="text-3xl text-center text-red-500 font-bold mb-8">Your Favourites</h1>
@@ -23,7 +22,7 @@
 
             <!-- Image -->
             <div class="relative h-56 w-full">
-              <img src="<%= home.Photo %>" alt="<%= home.homeName %>" class="h-full w-full object-cover">
+              <img src="<%=home.Photo %>" alt="<%= home.homeName %>" class="h-full w-full object-cover">
 
               <!-- favourite -->
               <form action="/deleteFavourite" method="post"> 

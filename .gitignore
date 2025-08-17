@@ -9,16 +9,6 @@ pnpm-debug.log*
 logs
 *.log
 
-# Environment variables (store secrets here)
-.env
-
-# Database credentials (don’t push!)
-*.sql
-*.db
-*.sqlite
-/data/
-*.pem
-
 # OS junk
 .DS_Store
 Thumbs.db
