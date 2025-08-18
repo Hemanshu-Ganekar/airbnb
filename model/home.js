@@ -2,7 +2,8 @@ const fs = require("fs");
 const path = require("path");
 const rootDir = require("../utils/pathUtil");
 const { json } = require("stream/consumers");
-const db = require('../utils/database');
+const {getDB}=require("../utils/database");
+const { ObjectId } = require("mongodb");
 
 module.exports=class Home{
     constructor(houseName,pricePerNight,location,Rating,Photo,description){
@@ -15,12 +16,16 @@ module.exports=class Home{
     }
     
     save(){
-        return db.execute('INSERT INTO homes (houseName,pricePerNight,location,Rating,Photo,description) Value (?,?,?,?,?,?)',[this.houseName,this.pricePerNight,this.location,this.Rating,this.Photo,this.description]);
+     const db=getDB();
+     return db.collection('homes').insertOne(this);
     }
     static fetchAll(){
-    return db.execute("SELECT * FROM homes");
+     const db=getDB();
+    return db.collection('homes').find().toArray();
     }
     static findById(homeId){
-   return db.execute('SELECT*FROM homes WHERE id=?',[homeId]);
+        const db=getDB();
+
+    return db.collection('homes').find({_id: new ObjectId(String(homeId))}).next();
     }
 }

@@ -3,7 +3,7 @@ const Fav = require("../model/favourite");
 const bookings = require("../model/bookings");
 
 const homeList = (req, res, next) => {
-    Home.fetchAll().then(([registerHomes,fields])=>{
+    Home.fetchAll().then((registerHomes)=>{
         res.render('store/homeList', { registerHomes: registerHomes, currentPage:"home" });
     })
    
@@ -21,21 +21,20 @@ exports.favourite = favourite;
 
 const details = (req, res, next) => {
     const homeid = req.params.homeid;
-    console.log(homeid);
-
-    Home.findById(homeid).then(([homeFound,fields]) => {
-        if (!homeFound[0]) {
+    Home.findById(homeid).then((homeFound) => {
+        if (!homeFound) {
             console.log("Home not Found!!");
             res.redirect("/");
         } else {
-            res.render('store/details', { homeFound:homeFound[0],currentPage:"home" });
+            console.log(homeFound);
+            res.render('store/details', { homeFound:homeFound,currentPage:"home" });
         }
     })
 }
 exports.details = details;
 
 const addFavourite = (req, res, next) => {
-    console.log(req.body);
+  
     const id = req.body.id;
     Fav.addfavourite(id)
     .then(() => {
@@ -59,7 +58,6 @@ exports.deleteFavourite = deleteFavourite;
 
 // booking
 const addBookings = (req, res, next) => {
-    console.log(req.body.id);
     const id = req.body.id; 
     bookings.addbookings(id).then(() => {
         res.redirect("/");

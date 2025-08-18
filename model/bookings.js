@@ -3,29 +3,37 @@ const fs = require("fs");
 const rootDir = require("../utils/pathUtil");
 const Home = require("./home");
 const home = new Home;
-const db = require('../utils/database');
+const {getDB}=require("../utils/database");
+
 
 module.exports = class bookings {
 
-    static addbookings(id) {
-          return  db.execute('INSERT INTO bookings (id) VALUES (?)',[Number(id)]);
+    static async addbookings(id) {
+                          const db=getDB();
+    let favId=await db.collection('bookings').findOne({id:id});
+    if(!favId){
+    return  db.collection('bookings').insertOne({id:id});
+    }else{
+        console.log("booking already exist!!");
+      return null;
+    }             
     }
     static deletebookings(id) {
-            return db.execute('DELETE FROM bookings WHERE id=?',[Number(id)]);
+     const db=getDB();
+    return  db.collection('bookings').deleteOne({id:id});
     }
     static async showbook() {
-   
-             let bookHomes = [];
-            let [books,fields]=await db.execute('SELECT*FROM bookings')
-             
-             for(let book of books){
-                 const [home]= await db.execute('SELECT*FROM homes WHERE id=?',[book.id]);
-    
-                 bookHomes.push(home[0]);
-             }
-            
-             return bookHomes;
-
+     let bookHomes = [];
+        const db=getDB();
+     const bookIds= await db.collection('bookings').find().toArray();
+     const homes = await Home.fetchAll();
+     bookIds.forEach(bookId => {
+        const home = homes.find(h=>String(h._id)==String(bookId.id));
+        if(home){
+        bookHomes.push(home);
+        }
+    });
+    return bookHomes;
     }
 
 }
