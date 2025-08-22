@@ -2,15 +2,17 @@
  
  <!-- Left: Brand -->
   <h1 class="text-white text-3xl font-bold tracking-wide">
-    <a href="/">Airbnb</a>
+    <a href="<%= userType !== 'host' ? '/' : '/host/hostedHomes' %>">Airbnb</a>
   </h1>
-
   <!-- Right: Navigation -->
 <nav class="flex items-center gap-6">
     <a href="/" 
-       class="text-white text-lg font-medium hover:text-red-100 transition <%=currentPage=='home'?'bg-red-300':'bg-transparent'%> p-1 rounded-lg">
+       <%= userType === 'host' ? 'hidden' : '' %>
+       class="text-white text-lg font-medium hover:text-red-100 transition <%=currentPage=='home'?'bg-red-300':'bg-transparent'%> p-1 rounded-lg ">
        Home
     </a>
+    <% if(isLoggedIn==true){ %>
+      <% if(userType=="guest"){ %>
     <a href="/favourite" 
        class="text-white text-lg font-medium hover:text-red-100 transition <%=currentPage=='favourite'?'bg-red-300':'bg-transparent'%> p-1 rounded-lg">
        Favourite
@@ -19,14 +21,21 @@
        class="text-white text-lg font-medium hover:text-red-100 transition <%=currentPage=='bookings'?'bg-red-300':'bg-transparent'%> p-1 rounded-lg">
        Bookings
     </a>
+      <% } else if(userType=="host"){ %>
     <a href="/host/hostedHomes" 
        class="text-white text-lg font-medium hover:text-red-100 transition <%=currentPage=='hostedHomes'?'bg-red-300':'bg-transparent'%> p-1 rounded-lg">
        Hosted Home
     </a>
 
     <a href="/host/add-home"
-       class="bg-white text-red-400 text-lg font-semibold px-6 py-2 rounded-full shadow hover:bg-red-50 hover:text-red-500 transition">
+       class="bg-white text-red-400 text-lg font-semibold px-6 py-2 rounded-2xl shadow hover:bg-red-50 hover:text-red-500 transition">
        + Add Home
     </a>
+    <%}%>
+    <%}%>
   </nav>
+      <a href="<%= isLoggedIn==true?'/auth/logOut':'/auth/login'%>"
+       class="bg-white text-red-400 text-lg font-semibold px-6 py-2 rounded-full  shadow hover:bg-red-50 hover:text-red-500 transition">
+       <%= isLoggedIn==true?'Log-Out':'Log-In'%>
+    </a>
   </header>

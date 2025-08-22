@@ -1,30 +1,13 @@
 const Home = require("../model/home");
-const Fav = require("../model/favourite");
-const bookings = require("../model/bookings");
+const user = require("../model/user");
 
-const homeList = (req, res, next) => {
-    Home.find().then((registerHomes)=>{
-        res.render('store/homeList', { registerHomes: registerHomes, currentPage:"home" });
-    })
-   
+const homeList = async (req, res, next) => {
+    const registerHomes = await Home.find();
+    const userType = await req.session.isLoggedIn ? req.session.user.userType : "guest";
+    const isLoggedIn = await req.session.isLoggedIn || false;
+    res.render('store/homeList', { registerHomes: registerHomes, currentPage:"home",isLoggedIn:isLoggedIn  , userType:userType });
 }
 exports.homeList = homeList;
-
-
-const favourite = async (req, res, next) => {
-    let favHomes=[];
-    // let favIds = await Fav.find();
-    // Ids= favIds.map(favId=>favId.id);
-    // favHomes = await Home.find({_id:{$in:Ids}});
-    // res.render('store/favourite', {favHomes:favHomes,currentPage:"favourite" });
-    Fav.find().populate('id')
-    .then((favIds)=>{
-        const favHomes=favIds.map(fav=>fav.id);
-     res.render('store/favourite', {favHomes:favHomes,currentPage:"favourite" });
-
-    })
-}
-exports.favourite = favourite;
 
 const details = (req, res, next) => {
     const homeid = req.params.homeid;
@@ -33,72 +16,102 @@ const details = (req, res, next) => {
             console.log("Home not Found!!");
             res.redirect("/");
         } else {
-            res.render('store/details', { homeFound:homeFound,currentPage:"home" });
+            res.render('store/details', { homeFound:homeFound,currentPage:"home",isLoggedIn:req.session.isLoggedIn , userType:req.session.user.userType });
         }
     })
 }
 exports.details = details;
 
-const addFavourite = (req, res, next) => {
+
+//favourite
+const favourite = async (req, res, next) => {
+    let favHomes=[];
+    const userId = await user.findById(req.session.user._id);
+    for(let favourite of userId.favourite){
+     const home = await Home.findById(favourite);
+     favHomes.push(home);
+    };
+     res.render('store/favourite', {favHomes:favHomes,currentPage:"favourite",isLoggedIn:req.session.isLoggedIn , userType:req.session.user.userType  });
+}
+exports.favourite = favourite;
+
+const addFavourite = async (req, res, next) => {
     const id = req.body.id;
-    const exist=Fav.findOne({id:id})
-    .then((exist)=>{
+    let userId = await user.findById(req.session.user._id);
+    const exist= await userId.favourite.forEach(fav => {
+        if(fav == id){
+            return true;
+        }
+    });
+
     if(!exist){
-        let fav = new Fav({id:id});
-        fav.save();
+        userId.favourite.push(id);
+        await userId.save();
     }
     res.redirect("/");
-    })
 }
 exports.addFavourite = addFavourite;
 
-const deleteFavourite = (req, res, next) => {
+const deleteFavourite = async (req, res, next) => {
     const id = req.body.id;
-
-    if (!id) {
+    const userId = await user.findById(req.session.user._id);
+    if (!userId) {
         return res.status(400).send("No ID provided");
     }
-
-    Fav.deleteOne({id:id}).then(() => {
+     userId.favourite = userId.favourite.filter(fav => fav.toString() !== id);
+    await userId.save();
         res.redirect("/favourite");
-    });
+    
 };
 exports.deleteFavourite = deleteFavourite;
 
 // booking
-const addBookings = (req, res, next) => {
+const addBookings = async (req, res, next) => {
      const id = req.body.id;
-    const exist=bookings.findOne({id:id})
-    .then((exist)=>{
-    if(!exist){
-        let book = new bookings({id:id});
-        book.save();
+     const userId = await user.findById(req.session.user._id);
+     const exist = await userId.bookings.forEach(book => {
+        if (book == id) {
+            return true;
+        }
+    });
+
+    if (!exist) {
+        userId.bookings.push(id);
+        await userId.save();
     }
     res.redirect("/");
-    })    
 }
 exports.addBookings = addBookings;
 
-const deleteBookings = (req, res, next) => {
+const deleteBookings = async (req, res, next) => {
     const id = req.body.id;
     if (!id) {
         return res.status(400).send("No ID provided");
     }
-    bookings.deleteOne({id:id}).then(() => {
-        res.redirect("/bookings");
-    });
+    const userId = await user.findById(req.session.user._id);
+    if (!userId) {
+        return res.status(400).send("No ID provided");
+    }
+    userId.bookings = userId.bookings.filter(book => book.toString() !== id);
+    await userId.save();
+    res.redirect("/bookings");
 };
 
 exports.deleteBookings = deleteBookings;
 
 const showBookings = async (req, res, next) => {
         let bookHomes=[];
-
-bookings.find().populate('id')
-    .then((bookIds)=>{
-        const bookHomes=bookIds.map(fav=>fav.id);
-        res.render('store/bookings', { bookHomes:bookHomes,currentPage:"bookings" });
-    })
-
+    const userId = await user.findById(req.session.user._id);
+    for (const book of userId.bookings) {
+        const booking = await Home.findById(book);
+        if(booking){
+        bookHomes.push(booking);
+            }
+    }
+    console.log(bookHomes);
+    if (bookHomes.length === 0) {
+        return res.render('store/bookings', { bookHomes: [], currentPage: "bookings", isLoggedIn: req.session.isLoggedIn, userType:req.session.user.userType });
+    }
+    res.render('store/bookings', { bookHomes:bookHomes,currentPage:"bookings",isLoggedIn:req.session.isLoggedIn , userType:req.session.user.userType });
 }
 exports.showBookings = showBookings;
