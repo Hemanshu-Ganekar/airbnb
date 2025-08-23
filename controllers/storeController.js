@@ -5,6 +5,7 @@ const homeList = async (req, res, next) => {
     const registerHomes = await Home.find();
     const userType = await req.session.isLoggedIn ? req.session.user.userType : "guest";
     const isLoggedIn = await req.session.isLoggedIn || false;
+    console.log(isLoggedIn);
     res.render('store/homeList', { registerHomes: registerHomes, currentPage:"home",isLoggedIn:isLoggedIn  , userType:userType });
 }
 exports.homeList = homeList;
@@ -31,6 +32,7 @@ const favourite = async (req, res, next) => {
      const home = await Home.findById(favourite);
      favHomes.push(home);
     };
+    console.log(favHomes);
      res.render('store/favourite', {favHomes:favHomes,currentPage:"favourite",isLoggedIn:req.session.isLoggedIn , userType:req.session.user.userType  });
 }
 exports.favourite = favourite;

@@ -52,7 +52,12 @@
               </p>
 
               <!-- Button -->
+    <% if(isLoggedIn==true){ %>
+              
                <a href="/home/<%= home._id %>">
+                <% } else { %>
+                <a href="/auth/login">
+                <% } %>
               <button class="mt-3 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
                 View Details
               </button>

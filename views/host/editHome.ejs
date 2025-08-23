@@ -16,7 +16,7 @@
 
     <main class="mt-10 flex justify-center">
       <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-lg">
-          <form action="<%=edit=='false'?'/host/add-home':'/host/editHome'%>" method="POST" class="space-y-6">
+          <form action="<%=edit=='false'?'/host/add-home':'/host/editHome'%>" method="POST" class="space-y-6" enctype="multipart/form-data">
             <% if(edit=="true"){%>
                <input type="hidden" name="id" value="<%= home._id%>">
               <%}%>
@@ -79,8 +79,10 @@
           <!-- Input -->
           <input
             id="Photo"
-            class="border border-gray-300 w-full rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm"
-            type="text"
+            type="file"
+            class="border border-gray-300 w-full rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-sm file:bg-red-400 file-placeholder:bg-white file:w-25 file:h-10 file:px-3 file:rounded-lg file:text-white file:border-0 file:cursor-pointer hover:file:bg-red-600"
+            multiple
+            accept="image/*"
             name="Photo"
             placeholder="URL"
             value="<%= edit == 'true' ? home.Photo : '' %>"

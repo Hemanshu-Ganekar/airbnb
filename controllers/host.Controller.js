@@ -1,11 +1,12 @@
 const Home = require("../model/home");
 const user = require("../model/user");
+const fs = require('fs');
 const PostHome = async (req, res, next) => {
-  const { houseName, pricePerNight, location, Rating, Photo, description } = req.body;
+  const { houseName, pricePerNight, location, Rating, description } = req.body;
   const userId = await user.findById(req.session.user._id);
-  const home = new Home({ houseName, pricePerNight, location, Rating, Photo, description });
+  const home = new Home({ houseName, pricePerNight, location, Rating, Photo: req.file.path, description });
   await home.save();
-  console.log(home._id);
+  console.log(req.file);
   userId.hostedHomes.push(home._id);
   await userId.save();
   console.log("home added!!");
@@ -33,16 +34,26 @@ const hostedHomes = async (req, res, next) => {
 }
 exports.hostedHomes = hostedHomes;
 
-const getEditHome = (req, res, next) => {
+const getEditHome = async (req, res, next) => {
   const id = req.params.id;
+  const currentUser = await user.findById(req.session.user._id);
+
+const homeToUpdate = currentUser.hostedHomes.filter(homeId => homeId.toString() === id);
+console.log(homeToUpdate);                                //security measure
+if (homeToUpdate.length === 0) {                //security measure 
+  console.log("Unauthorized Edit Attempt!!");       //security measure
+  return res.redirect('/PageNotFound');         //security measure
+}
+
   Home.findById(id).then((homes) => {
     res.render("host/editHome", { home: homes, edit: "true" ,isLoggedIn:req.session.isLoggedIn , userType:req.session.user.userType});
   })
 }
 exports.getEditHome = getEditHome;
 
-const postEditHome = (req, res, next) => {
-  const { houseName, pricePerNight, location, Rating, Photo, id ,description } = req.body;
+const postEditHome = async (req, res, next) => {
+  const { houseName, pricePerNight, location, Rating, id ,description } = req.body;
+ 
   Home.findById(id)
   .then((home)=>{
     if(!home){
@@ -53,7 +64,15 @@ const postEditHome = (req, res, next) => {
    home.pricePerNight=pricePerNight;
    home.location=location;
    home.Rating=Rating;
-   home.Photo=Photo;
+
+   if(req.file){
+     fs.unlink(home.Photo, (err) => {
+       if (err) {
+         console.error("Error deleting old photo:", err);
+       }
+     });
+     home.Photo=req.file.path;
+   }
    home.description=description;
    return home.save();
   })
@@ -64,12 +83,27 @@ const postEditHome = (req, res, next) => {
 exports.postEditHome = postEditHome;
 
 const deleteHostedHome = async (req, res, next) => {
-  const id = req.body.id;
+  const id = await req.body.id;
+
+                                            const currentUser = await user.findById(req.session.user._id);
+                                            const homeToUpdate = currentUser.hostedHomes.filter(homeId => homeId.toString() === id);
+                                            console.log(homeToUpdate);                                //security measure
+                                            if (homeToUpdate.length === 0) {                //security measure
+                                              console.log("Unauthorized Delete Attempt!!");       //security measure
+                                              return res.redirect('/PageNotFound');         //security measure
+                                            }
+
   const userId = await user.findById(req.session.user._id);
-  Home.findByIdAndDelete(id).then(() => {
-    res.redirect('/host/hostedHomes');
-  })
+  const home = await Home.findById(id);
+  fs.unlink(home.Photo, (err) => {
+    if (err) {
+      console.error("Error deleting old photo:", err);
+    }
+  });
+  await Home.findByIdAndDelete(id);
   userId.hostedHomes = userId.hostedHomes.filter(home => home.toString() !== id);
   await userId.save();
+    res.redirect('/host/hostedHomes');
+
 }
 exports.deleteHostedHome = deleteHostedHome;

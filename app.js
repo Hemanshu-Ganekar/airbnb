@@ -5,6 +5,7 @@ const path = require('path');
 const express = require('express');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
+const multer = require('multer');
 
 //Local Module
 const storeRouter = require("./routes/storeRouter")
@@ -18,10 +19,23 @@ const store=new MongoDBStore({
   uri:"mongodb+srv://hemanshuganekar:RoHeHeVi-111@kgcluster.tywknhp.mongodb.net/airbnb?retryWrites=true&w=majority&appName=KGCluster",
   collection:'session',
 })
-
+const storage = multer.diskStorage({
+  destination : (req,file ,cd)=>{
+    cd(null, 'uploads/');
+  },
+  filename : (req,file,cd)=>{
+    cd(null, new Date().toISOString().replace(/:/g,'-') + file.originalname);
+  }
+});
 app.set("view engine","ejs");
 app.set('views','views');
+app.use('/uploads',express.static(path.join(rootDir,"uploads")));
+app.use('/host/uploads',express.static(path.join(rootDir,"uploads")));
+app.use('/home/uploads',express.static(path.join(rootDir,"uploads")));
+
 app.use(express.urlencoded());
+app.use(multer({storage}).single('Photo'));
+
 app.use(session({
  secret:'3.142 is the value of pi',
  resave:false,
